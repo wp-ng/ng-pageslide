@@ -11,7 +11,7 @@
 
     angular
         .module('pageslide-directive', [])
-        .directive('pageslide', ['$document', '$timeout', '$window', function ($document, $timeout, $window) {
+        .directive('pageslide', ['$document', '$timeout', '$window', '$parse', function ($document, $timeout, $window, $parse) {
             var defaults = {};
 
 
@@ -184,14 +184,12 @@
                     }
 
                     function onTransitionEnd() {
-                        if (scope.psOpen) {
-                            if (typeof scope.onopen === 'function') {
-                                scope.onopen();
-                            }
-                        } else {
-                            if (typeof scope.onclose === 'function') {
-                                scope.onclose();
-                            }
+
+                        if (!scope.psOpen) {
+                            $parse(scope.onclose)();
+                            $timeout(function () {
+                                scope.$apply();
+                            });
                         }
                     }
 
@@ -310,6 +308,9 @@
                         }
 
                         scope.psOpen = true;
+
+                        //Run onopen
+                        $parse(scope.onopen)();
 
                         if (param.keyListener) {
                             $document.on('keydown', handleKeyDown);
