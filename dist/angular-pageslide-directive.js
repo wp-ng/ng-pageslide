@@ -96,6 +96,7 @@
                                 new_height = (!param.height ? param.size : 'calc(' + param.defaultSize + ' - ' + param.height + 'px)');
                                 param.size = new_height;
                                 slider.style.height = param.size;
+                                slider.style.top = !scope.psOpen ? "0px" : get_negative_size(new_height);
 
                                 if (param.push) {
                                     slider.style.top = '0px';
@@ -109,6 +110,7 @@
                                 param.size = new_height;
                                 slider.style.height = param.size;
                                 slider.style.top = '';
+                                slider.style.bottom = scope.psOpen ? "0px" : get_negative_size(new_height);
                                 break;
                             default:
                                 new_height = !param.height ? '100%' : ('calc(100% - ' + param.height + 'px)');
