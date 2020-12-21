@@ -11,7 +11,7 @@
 
     angular
         .module('pageslide-directive', [])
-        .directive('pageslide', ['$document', '$timeout', function ($document, $timeout) {
+        .directive('pageslide', ['$document', '$timeout', '$window', function ($document, $timeout, $window) {
             var defaults = {};
 
 
@@ -186,11 +186,11 @@
                     function onTransitionEnd() {
                         if (scope.psOpen) {
                             if (typeof scope.onopen === 'function') {
-                                scope.onopen()();
+                                scope.onopen();
                             }
                         } else {
                             if (typeof scope.onclose === 'function') {
-                                scope.onclose()();
+                                scope.onclose();
                             }
                         }
                     }
@@ -373,7 +373,7 @@
                         }
 
                         slider.removeEventListener('transitionend', onTransitionEnd);
-                        slider.removeEventListener('beforeunload', onunload);
+                        $window.removeEventListener('beforeunload', onunload);
                     });
 
                     if (param.autoClose) {
@@ -383,7 +383,7 @@
                         scope.$on('$stateChangeStart', function() {
                             psClose(slider, param);
                         });
-                        slider.addEventListener('beforeunload', onunload);
+                        $window.addEventListener('beforeunload', onunload);
                     }
 
                     if (param.removeHeight) {
