@@ -31,6 +31,7 @@
                     psKeyListener: '@',
                     psBodyClass: '@',
                     psClickOutside: '@',
+                    psRemoveHeight: '@',
                     onopen: '&?',
                     onclose: '&?'
                 },
@@ -48,7 +49,10 @@
                     param.keyListener = scope.psKeyListener === 'true';
                     param.bodyClass = scope.psBodyClass || false;
                     param.clickOutside = scope.psClickOutside !== 'false';
-                    param.autoClose = scope.psAutoClose || false;
+                    param.autoClose = scope.psAutoClose === 'true';
+                    param.removeHeight = scope.psRemoveHeight || false;
+                    param.height = 0;
+                    param.defaultSize = param.size;
 
                     param.push = param.push && !param.container;
 
@@ -62,6 +66,55 @@
                         body = document.getElementById(param.container);
                     } else {
                         body = document.body;
+                    }
+
+                    if ( param.removeHeight ) {
+                        param.removeHeight = angular.element(param.removeHeight);
+
+                        if (!param.removeHeight.length) {
+                            param.removeHeight = null;
+                        }
+                    }
+
+                    function get_negative_size(size) {
+
+                        if (size.indexOf('calc(') === 0) {
+
+                            return size.replace('calc(', 'calc(-').replace(' - ', ' + ');
+                        }
+
+                        return '-' + param.size;
+                    }
+
+                    function calc_height(size) {
+
+                        param.height = parseInt(size, 10);
+                        var new_height;
+
+                        switch (param.side) {
+                            case 'top':
+                                new_height = (!param.height ? param.size : 'calc(' + param.defaultSize + ' - ' + param.height + 'px)');
+                                param.size = new_height;
+                                slider.style.height = param.size;
+
+                                if (param.push) {
+                                    slider.style.top = '0px';
+                                }
+                                else {
+                                    slider.style.top = scope.psOpen ? param.height + 'px' : get_negative_size(new_height);
+                                }
+                                break;
+                            case 'bottom':
+                                new_height = (!param.height ? param.size : 'calc(' + param.defaultSize + ' - ' + param.height + 'px)');
+                                param.size = new_height;
+                                slider.style.height = param.size;
+                                slider.style.top = '';
+                                break;
+                            default:
+                                new_height = !param.height ? '100%' : ('calc(100% - ' + param.height + 'px)');
+                                slider.style.height = new_height;
+                                slider.style.top = (!param.height) ? '0px' : '';
+                        }
                     }
 
                     function onBodyClick(e) {
@@ -148,24 +201,24 @@
                         switch (param.side) {
                             case 'right':
                                 slider.style.width = param.size;
-                                slider.style.height = '100%';
-                                slider.style.top = '0px';
+                                slider.style.height = (!param.height ? '100%' : 'calc(100% - ' + param.height + 'px)');
+                                slider.style.top = (!param.height) ? '0px' : '';
                                 slider.style.bottom = '0px';
                                 break;
                             case 'left':
                                 slider.style.width = param.size;
-                                slider.style.height = '100%';
-                                slider.style.top = '0px';
+                                slider.style.height = (!param.height ? '100%' : 'calc(100% - ' + param.height + 'px)');
+                                slider.style.top = (!param.height) ? '0px' : '';
                                 slider.style.bottom = '0px';
                                 break;
                             case 'top':
-                                slider.style.height = param.size;
+                                slider.style.height = (!param.height ? param.size : 'calc(' + param.defaultSize + ' - ' + param.height + 'px)');
                                 slider.style.width = '100%';
                                 slider.style.left = '0px';
                                 slider.style.right = '0px';
                                 break;
                             case 'bottom':
-                                slider.style.height = param.size;
+                                slider.style.height = (!param.height ? param.size : 'calc(' + param.defaultSize + ' - ' + param.height + 'px)');
                                 slider.style.width = '100%';
                                 slider.style.left = '0px';
                                 slider.style.right = '0px';
@@ -173,37 +226,37 @@
                         }
 
                         if (scope.psOpen) {
-                          psOpen(slider, param);
+                            psOpen(slider, param);
                         } else {
-                          psClose(slider, param);
+                            psClose(slider, param);
                         }
                     }
 
                     function psClose(slider, param) {
                         switch (param.side) {
                             case 'right':
-                                slider.style.right = "-" + param.size;
+                                slider.style.right = get_negative_size(param.size);
                                 if (param.push) {
                                     body.style.right = '0px';
                                     body.style.left = '0px';
                                 }
                                 break;
                             case 'left':
-                                slider.style.left = "-" + param.size;
+                                slider.style.left = get_negative_size(param.size);
                                 if (param.push) {
                                     body.style.left = '0px';
                                     body.style.right = '0px';
                                 }
                                 break;
                             case 'top':
-                                slider.style.top = "-" + param.size;
+                                slider.style.top = get_negative_size(param.size);
                                 if (param.push) {
                                     body.style.top = '0px';
                                     body.style.bottom = '0px';
                                 }
                                 break;
                             case 'bottom':
-                                slider.style.bottom = "-" + param.size;
+                                slider.style.bottom = get_negative_size(param.size);
                                 if (param.push) {
                                     body.style.bottom = '0px';
                                     body.style.top = '0px';
@@ -224,33 +277,34 @@
                     }
 
                     function psOpen(slider, param) {
+
                         switch (param.side) {
                             case 'right':
                                 slider.style.right = "0px";
                                 if (param.push) {
                                     body.style.right = param.size;
-                                    body.style.left = '-' + param.size;
+                                    body.style.left = get_negative_size(param.size);
                                 }
                                 break;
                             case 'left':
                                 slider.style.left = "0px";
                                 if (param.push) {
                                     body.style.left = param.size;
-                                    body.style.right = '-' + param.size;
+                                    body.style.right = get_negative_size(param.size);
                                 }
                                 break;
                             case 'top':
-                                slider.style.top = "0px";
+                                slider.style.top = param.height + 'px';
                                 if (param.push) {
                                     body.style.top = param.size;
-                                    body.style.bottom = '-' + param.size;
+                                    body.style.bottom = get_negative_size(param.size);
                                 }
                                 break;
                             case 'bottom':
                                 slider.style.bottom = "0px";
                                 if (param.push) {
                                     body.style.bottom = param.size;
-                                    body.style.top = '-' + param.size;
+                                    body.style.top = get_negative_size(param.size);
                                 }
                                 break;
                         }
@@ -281,6 +335,10 @@
                                 scope.$apply();
                             });
                         }
+                    }
+
+                    function onunload() {
+                        psClose(slider, param);
                     }
 
                     // Initialize
@@ -315,6 +373,7 @@
                         }
 
                         slider.removeEventListener('transitionend', onTransitionEnd);
+                        slider.removeEventListener('beforeunload', onunload);
                     });
 
                     if (param.autoClose) {
@@ -324,8 +383,20 @@
                         scope.$on('$stateChangeStart', function() {
                             psClose(slider, param);
                         });
+                        slider.addEventListener('beforeunload', onunload);
                     }
 
+                    if (param.removeHeight) {
+                        scope.$watch(function() {
+
+                            return param.removeHeight[0].offsetHeight + param.removeHeight[0].offsetTop;
+                        }, function(new_size, old_size) {
+
+                            if (new_size !== old_size ) {
+                                calc_height(new_size);
+                            }
+                        });
+                    }
                 }
             };
         }]);
