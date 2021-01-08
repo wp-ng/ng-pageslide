@@ -390,6 +390,11 @@
                     }
 
                     if (param.removeHeight) {
+                        $timeout(function () {
+
+                            calc_height(param.removeHeight[0].offsetHeight + param.removeHeight[0].offsetTop);
+                        }, 0);
+
                         scope.$watch(function() {
 
                             return param.removeHeight[0].offsetHeight + param.removeHeight[0].offsetTop;
